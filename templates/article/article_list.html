@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+ {% load static %}
+  {% block content %}
+  <a href="{% url 'article:article_create' %}">
+    <button type="button" class="btn-sm btn btn-primary">Post New Article</button>
+  </a>
+  {% if request.user.is_authenticated %}
+  <a href="{% url 'user:user_logout' %}">
+    <button type="button" class="btn-sm btn btn-secondary">Logout {{request.user.username}}</button>
+  </a>
+  {% else %}
+  <a href="{% url 'user:user_login' %}">
+    <button type="button" class="btn-sm btn btn-secondary">Login</button>
+  </a>
+  {% endif %}
+  <hr class="my-4" /> 
+
+  {% if request.user.is_authenticated %}
+
+  <div class="row">
+    <div class="col-md-6">
+      <a href="/">
+        <button type="button" class="btn-sm btn btn-outline-secondary">All List</button>
+      </a>
+      
+      <a href="{% url 'article:article_list' %}?me">
+        <button type="button" class="btn-sm btn btn-outline-secondary">Your List</button>
+      </a>
+      
+    </div>
+  </div>
+  {% endif %}
+   {% for article in articles %}
+      <div class="post-preview">
+      <a href="{% url 'article:article_detail' article.id %}">
+        <h2 class="post-title">{{ article.title }}</h2>
+        <h3 class="post-subtitle">{{ article.content|truncatewords:30}}</h3>
+      </a>
+      <p class="post-meta"> Posted by <a href="#!">{{ article.user }}</a></p>
+    </div><hr class="my-4" /> 
+    {% empty %}
+      <hr class="my-4" /> 
+  {% endfor %} 
+
+{% endblock content %}
+{% block homepage %}{% endblock homepage %}

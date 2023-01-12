@@ -1,0 +1,77 @@
+{% extends 'base.html' %} {% block content %}
+<div class="post-preview">
+    <h2 class="post-title">{{ article.title }}</h2>
+    <p class="post-subtitle">{{ article.content}}</p>
+    <p class="post-meta"> Posted by <a href="#!">{{ article.user }}</a> {% if article.is_published %}
+        on {{ article.published_date }}{% else %}<b>Unpublished</b>{% endif %}
+    </p>
+    <p class="post-meta likes-count"> Likes: {{ likes_count }}</p>
+    <p class="post-meta"> Comments: {{ comments.count }}</p>
+   
+    {% if request.user.is_authenticated %}
+    <button type="button" id="like-btn" data-url="{% url 'article:like_article' article.id %}"
+        class="btn-sm btn btn-primary">{% if is_article_liked %}Unlike{% else %}Like{% endif %}</button>
+    {% if is_article_owner %}
+    <a href="{% url 'article:article_update' article.id %}">
+        <button type="button" class="btn-sm btn btn-secondary">Update</button>
+    </a>
+    <button type="button" class="btn-sm btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">Delete</button>
+    {% endif %}
+    {% else %}
+   
+    <p class="post-meta text-bold">
+        <a href="{% url 'user:user_login' %}">Login to like and comment</a>
+    </p>
+    {% endif %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+            Are you sure you want to delete ?
+        </div>
+        <div class="modal-footer">
+        <form action="{% url 'article:article_delete' article.id %}" method="post">
+            {% csrf_token %}
+          <button type="button" class="btn-sm btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-sm btn btn-danger">Delete</button>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+{% endblock content %} 
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    $(document).ready(function() {
+        $('#like-btn').on('click', function() {
+            var articleUrl = $(this).data('url');
+            console.log(articleUrl)
+            $.ajax({
+                url: articleUrl,
+                type: 'POST',
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+                success: function(response) {
+                  if (response["success"]) {
+                    $(".likes-count").load(location.href + " .likes-count");
+                    if (response["liked"]){
+                      $("#like-btn").text("Unlike");
+                    }else{
+                      $("#like-btn").text("like")
+                    }
+                  }
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                    alert("Something went wrong");
+                }
+            });
+        });
+    });
+    </script>
+    
+{% endblock %}
